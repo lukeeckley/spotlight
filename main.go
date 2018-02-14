@@ -18,7 +18,10 @@ import (
 func main() {
 	usr, _ := user.Current()
 	spotlightfolder := usr.HomeDir + "\\AppData\\Local\\Packages\\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\\LocalState\\Assets\\"
-	outputfolder := usr.HomeDir + "\\Desktop\\MyPhotos\\"
+	outputfolder := usr.HomeDir + "\\Desktop\\Spotlight\\"
+	if _, err := os.Stat(outputfolder); os.IsNotExist(err) {
+    os.Mkdir(outputfolder, 0700)
+	}
 	files, err := ioutil.ReadDir(spotlightfolder)
 	if err != nil {
 		log.Fatal(err)
@@ -52,7 +55,7 @@ func main() {
 				}
 				hash := hex.EncodeToString(h.Sum(nil))
 				if !hashInHashes(hash, hashes) {
-					err := copyFile(filePath, outputfolder + f.Name() + ".jpg")
+					err := copyFile(filePath, outputfolder + hash + ".jpg")
 					if err != nil {
 						log.Fatal(err)
 					}
