@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"image"
 	_ "image/jpeg"
@@ -12,7 +13,6 @@ import (
 	"net/http"
 	"os"
 	"os/user"
-	"encoding/hex"
 )
 
 func main() {
@@ -20,7 +20,7 @@ func main() {
 	spotlightfolder := usr.HomeDir + "\\AppData\\Local\\Packages\\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\\LocalState\\Assets\\"
 	outputfolder := usr.HomeDir + "\\Desktop\\Spotlight\\"
 	if _, err := os.Stat(outputfolder); os.IsNotExist(err) {
-    os.Mkdir(outputfolder, 0700)
+		os.Mkdir(outputfolder, 0700)
 	}
 	files, err := ioutil.ReadDir(spotlightfolder)
 	if err != nil {
@@ -55,7 +55,7 @@ func main() {
 				}
 				hash := hex.EncodeToString(h.Sum(nil))
 				if !hashInHashes(hash, hashes) {
-					err := copyFile(filePath, outputfolder + hash + ".jpg")
+					err := copyFile(filePath, outputfolder+hash+".jpg")
 					if err != nil {
 						log.Fatal(err)
 					}
@@ -91,7 +91,7 @@ func hashInHashes(hash string, hashes []string) bool {
 		if v == hash {
 			return true
 		}
-  }
+	}
 	return false
 }
 
@@ -120,24 +120,24 @@ func isWallpaper(imagePath string) bool {
 // destination file exists, all it's contents will be replaced by the contents
 // of the source file.
 func copyFile(src, dst string) (err error) {
-    in, err := os.Open(src)
-    if err != nil {
-        return
-    }
-    defer in.Close()
-    out, err := os.Create(dst)
-    if err != nil {
-        return
-    }
-    defer func() {
-        cerr := out.Close()
-        if err == nil {
-            err = cerr
-        }
-    }()
-    if _, err = io.Copy(out, in); err != nil {
-        return
-    }
-    err = out.Sync()
-    return
+	in, err := os.Open(src)
+	if err != nil {
+		return
+	}
+	defer in.Close()
+	out, err := os.Create(dst)
+	if err != nil {
+		return
+	}
+	defer func() {
+		cerr := out.Close()
+		if err == nil {
+			err = cerr
+		}
+	}()
+	if _, err = io.Copy(out, in); err != nil {
+		return
+	}
+	err = out.Sync()
+	return
 }
