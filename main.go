@@ -110,9 +110,8 @@ func isWallpaper(imagePath string) bool {
 
 	if image.Width > 1900 {
 		return true
-	} else {
-		return false
 	}
+	return false
 }
 
 // copyFileContents copies the contents of the file named src to the file named
