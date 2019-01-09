@@ -1,5 +1,5 @@
 @echo off
-SET PATH=%PATH%;C:\msys64\mingw64\bin
+REM SET PATH=%PATH%;C:\msys64\mingw64\bin
 
 REM rsrc must be installed to create the .syso file for the icon to be embedded in the exe
 REM rsrc -ico pinkparty.ico -o spotlight.syso
