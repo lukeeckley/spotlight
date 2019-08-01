@@ -1,3 +1,4 @@
+//go:generate goversioninfo
 package main
 
 import (
@@ -13,10 +14,76 @@ import (
 	"net/http"
 	"os"
 	"os/user"
+	"time"
+	"strconv"
+
+	"github.com/lxn/walk"
 )
 
 func main() {
-	usr, _ := user.Current()
+	var imageCount int
+	var imageCountMsg string
+
+	// Taking this from https://github.com/lxn/walk/blob/master/examples/notifyicon/notifyicon.go
+	mw, err := walk.NewMainWindow()
+	if err != nil {
+		log.Fatal(err)
+	}
+	// We load our icon from a file.
+	icon, err := walk.Resources.Icon("pinkparty.ico")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Create the notify icon and make sure we clean it up on exit.
+	ni, err := walk.NewNotifyIcon(mw)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer ni.Dispose()
+
+	// Set the icon and a tool tip text.
+	if err := ni.SetIcon(icon); err != nil {
+		log.Fatal(err)
+	}
+	if err := ni.SetToolTip("Processing Spotlight Photos..."); err != nil {
+		log.Fatal(err)
+	}
+
+	// When the left mouse button is pressed, bring up our balloon.
+	/* ni.MouseDown().Attach(func(x, y int, button walk.MouseButton) {
+		if button != walk.LeftButton {
+			return
+		}
+
+		if err := ni.ShowCustom(
+			"Walk NotifyIcon Example",
+			"There are multiple ShowX methods sporting different icons.",
+			icon); err != nil {
+
+			log.Fatal(err)
+		}
+	})*/
+
+	// We put an exit action into the context menu.
+	exitAction := walk.NewAction()
+	if err := exitAction.SetText("E&xit"); err != nil {
+		log.Fatal(err)
+	}
+	exitAction.Triggered().Attach(func() { walk.App().Exit(0) })
+	if err := ni.ContextMenu().Actions().Add(exitAction); err != nil {
+		log.Fatal(err)
+	}
+
+	// The notify icon is hidden initially, so we have to make it visible.
+	if err := ni.SetVisible(true); err != nil {
+		log.Fatal(err)
+	}
+
+	usr, err := user.Current()
+	if err != nil {
+		log.Fatal(err)
+	}
 	spotlightfolder := usr.HomeDir + "\\AppData\\Local\\Packages\\Microsoft.Windows.ContentDeliveryManager_cw5n1h2txyewy\\LocalState\\Assets\\"
 	outputfolder := usr.HomeDir + "\\Desktop\\Spotlight\\"
 	if _, err := os.Stat(outputfolder); os.IsNotExist(err) {
@@ -59,10 +126,24 @@ func main() {
 					if err != nil {
 						log.Fatal(err)
 					}
+					imageCount++
 				}
 			}
 		}
 	}
+
+	if (imageCount == 0) {
+		imageCountMsg = "Didn't copy any spotlight photos"
+	} else {
+		imageCountMsg = "Copied " + strconv.Itoa(imageCount) + " new spotlight photos to your desktop"
+	}
+
+	if err := ni.ShowCustom("Spotlight", imageCountMsg, icon); err != nil {
+		log.Fatal(err)
+	}
+
+	// If we don't sleep the program closes and we don't see the notification telling us how many photos were copied
+	time.Sleep(5 * time.Second)
 }
 
 func getHashesFromWallpapers(folder string) []string {

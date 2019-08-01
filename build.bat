@@ -1,8 +1,8 @@
 @echo off
-REM rsrc must be installed to create the .syso file for the icon to be embedded in the exe
-REM rsrc -ico pinkparty.ico -o spotlight.syso
-REM Using goversioninfo to set file attributes and icon
-REM goversioninfo -icon=pinkparty.ico
+REM Use goversioninfo to apply manifest and icon
+REM Make sure it's installed first
+go get github.com/josephspurrier/goversioninfo/cmd/goversioninfo
+go generate
 
 REM First compile it with go and the appropriate flags
 SET FLAGS="-H windowsgui -s -w"
@@ -14,7 +14,7 @@ for %%* in (.) do SET CurrentDir=%%~nx*
 REM If upx.exe is found in the path, use it to make this exe even smaller
 for %%X in (upx.exe) do (set FOUND=%%~$PATH:X)
 if defined FOUND (
-	upx.exe -9 %CurrentDir%.exe	
+	upx.exe -9 %CurrentDir%.exe
 )
 
 pause
